@@ -1,3 +1,10 @@
+## 0.1.1
+
+* Added **Read API** support to check book availability.
+* Added support for fetching **Ebook links** (PDF, EPUB, and online reader URLs).
+* Enhanced example app with an interactive availability dialog.
+* Improved model documentation and added new integration tests.
+
 ## 0.1.0
 
 * Initial release of `flutter_open_library`.

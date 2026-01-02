@@ -97,7 +97,8 @@ class _SearchPageState extends State<SearchPage> {
                     subtitle: Text(
                       book.authorNames?.join(', ') ?? 'Unknown Author',
                     ),
-                    trailing: Text(book.firstPublishYear?.toString() ?? ''),
+                    trailing: const Icon(Icons.info_outline),
+                    onTap: () => _showAvailability(book),
                   );
                 },
               ),
@@ -105,5 +106,81 @@ class _SearchPageState extends State<SearchPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _showAvailability(SearchBook book) async {
+    if (book.isbn == null || book.isbn!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No ISBN found for this book.')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await _client.getAvailabilityByIsbn(book.isbn!.first);
+
+    if (!mounted) return;
+    Navigator.pop(context); // Close loading dialog
+
+    if (result is OLSuccess<Availability>) {
+      final data = result.data;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(book.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Availability: ${data.preview}'),
+              const SizedBox(height: 16),
+              if (data.previewUrl.isNotEmpty)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // In a real app, use url_launcher or WebView
+                    debugPrint('Opening: ${data.previewUrl}');
+                  },
+                  icon: const Icon(Icons.menu_book),
+                  label: const Text('Read Online'),
+                ),
+              if (data.ebooks != null)
+                ...data.ebooks!.map(
+                  (ebook) => Column(
+                    children: [
+                      if (ebook.pdfUrl != null)
+                        TextButton.icon(
+                          onPressed: () => debugPrint('PDF: ${ebook.pdfUrl}'),
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: const Text('Download PDF'),
+                        ),
+                      if (ebook.epubUrl != null)
+                        TextButton.icon(
+                          onPressed: () => debugPrint('EPUB: ${ebook.epubUrl}'),
+                          icon: const Icon(Icons.file_download),
+                          label: const Text('Download EPUB'),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not fetch availability details.')),
+      );
+    }
   }
 }

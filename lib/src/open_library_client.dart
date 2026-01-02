@@ -5,6 +5,7 @@ import 'models/book.dart';
 import 'models/author.dart';
 import 'models/work_edition.dart';
 import 'models/subject.dart';
+import 'models/availability.dart';
 
 /// A client for interacting with the Open Library API.
 class OpenLibraryClient {
@@ -126,5 +127,70 @@ class OpenLibraryClient {
       '/subjects/$subject.json',
       fromJson: (json) => SubjectResponse.fromJson(json),
     );
+  }
+
+  /// Get availability and ebook links for one or more books.
+  ///
+  /// [bibkeys] can be ISBNs (e.g. 'ISBN:0451526538'), OCLC numbers, LCCNs, or OLIDs.
+  Future<OLResult<Map<String, Availability>>> getAvailability(
+    List<String> bibkeys,
+  ) async {
+    if (bibkeys.isEmpty) return OLSuccess({});
+
+    try {
+      final response = await _dio.get(
+        '/api/books',
+        queryParameters: {
+          'bibkeys': bibkeys.join(','),
+          'format': 'json',
+          'jscmd': 'viewapi',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map<String, dynamic>) {
+          final result = <String, Availability>{};
+          data.forEach((key, value) {
+            if (value is Map<String, dynamic>) {
+              result[key] = Availability.fromJson(value);
+            }
+          });
+          return OLSuccess(result);
+        }
+        return OLFailure(
+          message: 'Unexpected response format',
+          statusCode: response.statusCode,
+        );
+      }
+
+      return OLFailure(
+        message: 'Request failed with status: ${response.statusCode}',
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return OLFailure(
+        message: e.message ?? 'Unknown network error',
+        statusCode: e.response?.statusCode,
+        error: e.error,
+      );
+    } catch (e) {
+      return OLFailure(message: 'Unexpected error: $e');
+    }
+  }
+
+  /// Convenience method to get availability for a single ISBN.
+  Future<OLResult<Availability>> getAvailabilityByIsbn(String isbn) async {
+    final bibkey = 'ISBN:$isbn';
+    final result = await getAvailability([bibkey]);
+
+    return switch (result) {
+      OLSuccess(data: final map) =>
+        map.containsKey(bibkey)
+            ? OLSuccess(map[bibkey]!)
+            : OLFailure(message: 'No availability data found for ISBN: $isbn'),
+      OLFailure(message: final msg, statusCode: final code, error: final err) =>
+        OLFailure(message: msg, statusCode: code, error: err),
+    };
   }
 }

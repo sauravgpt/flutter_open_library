@@ -13,7 +13,9 @@ A modern, type-safe, and comprehensive Flutter package for the Open Library API.
   - **Books (ISBN)**: Get detailed metadata by ISBN.
   - **Authors**: Fetch author bios and bibliography.
   - **Works & Editions**: Differentiate between abstract works and physical editions.
-  - **Subjects**: Browse books by category.
+  - **Ebook & Reader Support**: Access direct links to PDF/EPUB and online readers.
+  - **Subjects API**: Fetch books by category or subject.
+  - **Cover URL Helpers**: Easily get image URLs for small, medium, and large covers.
 - **Improved Cover Handling**: Provides direct URLs for small, medium, and large covers for easy integration with libraries like `cached_network_image`.
 - **Dio Powered**: Efficient networking with support for custom interceptors and error handling.
 
@@ -61,6 +63,23 @@ final result = await client.getBookByIsbn('9780140328721');
 if (result is OLSuccess<Book>) {
   print('Title: ${result.data.title}');
   print('Publish Date: ${result.data.publishDate}');
+}
+```
+
+### Get Book Availability & Ebook Links (Read API)
+
+```dart
+final availability = await client.getAvailabilityByIsbn('0451526538');
+
+if (availability is OLSuccess) {
+  final data = (availability as OLSuccess<Availability>).data;
+  print('Preview available: ${data.preview}');
+  print('Read Online: ${data.previewUrl}');
+  
+  if (data.ebooks != null && data.ebooks!.isNotEmpty) {
+    print('PDF Link: ${data.ebooks!.first.pdfUrl}');
+    print('EPUB Link: ${data.ebooks!.first.epubUrl}');
+  }
 }
 ```
 

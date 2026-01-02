@@ -1,6 +1,6 @@
 name: flutter_open_library
 description: A modern, type-safe, and comprehensive Flutter package for the Open Library API, featuring high-level models and clean networking with Dio.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/sauravgpt/flutter_open_library
 
 environment:

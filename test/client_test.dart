@@ -88,5 +88,49 @@ void main() {
       final failure = result as OLFailure;
       expect(failure.statusCode, 404);
     });
+
+    test(
+      'getAvailabilityByIsbn should return Success with ebook links',
+      () async {
+        const isbn = '0451526538';
+        const bibkey = 'ISBN:$isbn';
+        const path = '/api/books';
+
+        dioAdapter.onGet(
+          path,
+          (server) => server.reply(200, {
+            bibkey: {
+              'bib_key': bibkey,
+              'info_url': 'https://openlibrary.org/books/OL2436462M',
+              'preview': 'full',
+              'preview_url': 'https://archive.org/details/book',
+              'thumbnail_url': 'https://covers.openlibrary.org/b/id/123-S.jpg',
+              'ebooks': [
+                {
+                  'epub_url': 'https://archive.org/download/book.epub',
+                  'pdf_url': 'https://archive.org/download/book.pdf',
+                  'availability': 'borrow',
+                },
+              ],
+            },
+          }),
+          queryParameters: {
+            'bibkeys': bibkey,
+            'format': 'json',
+            'jscmd': 'viewapi',
+          },
+        );
+
+        final result = await client.getAvailabilityByIsbn(isbn);
+
+        expect(result, isA<OLSuccess>());
+        final success = result as OLSuccess;
+        expect(success.data.preview, 'full');
+        expect(
+          success.data.ebooks?.first.pdfUrl,
+          'https://archive.org/download/book.pdf',
+        );
+      },
+    );
   });
 }

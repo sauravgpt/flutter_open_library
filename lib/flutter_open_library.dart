@@ -9,3 +9,4 @@ export 'src/models/work_edition.dart';
 export 'src/models/subject.dart';
 export 'src/models/search_response.dart';
 export 'src/models/common.dart';
+export 'src/models/availability.dart';
