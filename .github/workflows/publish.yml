@@ -1,0 +1,30 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for OIDC authentication
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Run Tests
+        run: dart test
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
