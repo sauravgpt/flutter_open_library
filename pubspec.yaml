@@ -1,0 +1,28 @@
+name: flutter_open_library
+description: A modern, type-safe, and comprehensive Flutter package for the Open Library API, featuring high-level models and clean networking with Dio.
+version: 0.1.0
+publish_to: none # Remove this when you are ready to publish to pub.dev
+
+environment:
+  sdk: ^3.10.4
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.9.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.10.4
+  freezed: ^3.2.3
+  json_serializable: ^6.11.2
+  http_mock_adapter: ^0.6.1
+  test: ^1.26.3
+
+flutter:
+  uses-material-design: true
