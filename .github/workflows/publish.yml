@@ -1,7 +1,10 @@
 name: Publish to pub.dev
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch: # Allows manual trigger if needed
 
 jobs:
   publish:
@@ -12,17 +15,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Run Build Runner
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Run Tests
-        run: dart test
+        run: flutter test
 
       - name: Publish to pub.dev
-        run: dart pub publish --force
+        run: flutter pub publish --force
